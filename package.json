@@ -1,0 +1,52 @@
+{
+  "name": "ai-surgical-education-platform",
+  "version": "1.0.0",
+  "description": "AI-Powered Surgical Education Platform with backend, frontend, and mobile components",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "mobile/SurgicalEducation"
+  ],
+  "scripts": {
+    "install:all": "npm install && npm run install:frontend && npm run install:mobile",
+    "install:frontend": "cd frontend && npm install",
+    "install:mobile": "cd mobile/SurgicalEducation && npm install",
+    "start:frontend": "cd frontend && npm start",
+    "start:mobile": "cd mobile/SurgicalEducation && npm start",
+    "build:frontend": "cd frontend && npm run build",
+    "build:mobile": "cd mobile/SurgicalEducation && npm run build",
+    "test:frontend": "cd frontend && npm test",
+    "lint:frontend": "cd frontend && npm run lint",
+    "dev": "concurrently \"npm run start:frontend\" \"cd backend && python -m uvicorn app.main:app --reload\"",
+    "backend:setup": "cd backend && pip install -r requirements.txt",
+    "backend:dev": "cd backend && python -m uvicorn app.main:app --reload",
+    "backend:test": "cd backend && python -m pytest"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/your-username/ai-surgical-education-platform.git"
+  },
+  "keywords": [
+    "surgical",
+    "education",
+    "ai",
+    "medical",
+    "platform",
+    "react",
+    "python",
+    "fastapi"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/your-username/ai-surgical-education-platform/issues"
+  },
+  "homepage": "https://github.com/your-username/ai-surgical-education-platform#readme"
+}
