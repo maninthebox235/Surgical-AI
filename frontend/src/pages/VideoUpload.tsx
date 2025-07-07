@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
-import { Box, Button, Container, Typography, LinearProgress, Paper, TextField, Alert } from '@mui/material';
+import { Box, Button, Container, Typography, LinearProgress, Paper, TextField, Alert, Card, CardContent, IconButton, Chip } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { CloudUpload, VideoFile, CheckCircle, School, TrendingUp } from '@mui/icons-material';
 import { createVideo, uploadVideoFile, processVideo } from '../services/api';
+import SuccessAnimation from '../components/animations/SuccessAnimation';
 
 const VideoUpload: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);

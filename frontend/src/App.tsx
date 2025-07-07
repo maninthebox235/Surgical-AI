@@ -7,7 +7,9 @@ import Layout from './components/Layout';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
+import EnhancedDashboard from './pages/EnhancedDashboard';
 import VideoUpload from './pages/VideoUpload';
+import EnhancedVideoUpload from './pages/EnhancedVideoUpload';
 import VideoPlayer from './pages/VideoPlayer';
 import Profile from './pages/Profile';
 
@@ -46,8 +48,11 @@ const App: React.FC = () => {
                 </ProtectedRoute>
               }
             >
-              <Route index element={<Dashboard />} />
-              <Route path="upload" element={<VideoUpload />} />
+              <Route index element={<EnhancedDashboard />} />
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="enhanced-dashboard" element={<EnhancedDashboard />} />
+              <Route path="upload" element={<EnhancedVideoUpload />} />
+              <Route path="original-upload" element={<VideoUpload />} />
               <Route path="videos/:videoId" element={<VideoPlayer />} />
               <Route path="profile" element={<Profile />} />
             </Route>
