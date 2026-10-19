@@ -12,16 +12,12 @@ import {
   List,
   ListItem,
   ListItemText,
-  ListItemIcon,
-  Divider,
   Chip,
-  CircularProgress,
   Alert,
   Fab,
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions,
 } from '@mui/material';
 import {
   PlayArrow as PlayIcon,
@@ -32,20 +28,12 @@ import {
   VolumeOff as VolumeOffIcon,
   Fullscreen as FullscreenIcon,
   Add as AddIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
   Timeline as TimelineIcon,
   Assessment as AssessmentIcon,
-  Comment as CommentIcon,
-  Note as NoteIcon,
-  Highlight as HighlightIcon,
-  Flag as FlagIcon,
 } from '@mui/icons-material';
-import { useAuth } from '../contexts/AuthContext';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorBoundary from '../components/ErrorBoundary';
 import AnnotationEditor from '../components/AnnotationEditor';
-import AnnotationTimeline from '../components/AnnotationTimeline';
 import AnnotationList from '../components/AnnotationList';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { Annotation } from '../components/AnnotationEditor';
@@ -68,32 +56,9 @@ interface VideoData {
   };
 }
 
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}
-
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`video-tabpanel-${index}`}
-      aria-labelledby={`video-tab-${index}`}
-      {...other}
-    >
-      {value === index && <Box sx={{ p: 2 }}>{children}</Box>}
-    </div>
-  );
-}
-
 const VideoPlayer: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
@@ -111,30 +76,30 @@ const VideoPlayer: React.FC = () => {
   const [annotationToDelete, setAnnotationToDelete] = useState<string | null>(null);
 
   useEffect(() => {
+    const fetchVideoData = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`/api/videos/${id}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch video data');
+        }
+
+        const data = await response.json();
+        setVideoData(data);
+      } catch (err) {
+        setError('Failed to load video. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchVideoData();
   }, [id]);
-
-  const fetchVideoData = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(`/api/videos/${id}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch video data');
-      }
-
-      const data = await response.json();
-      setVideoData(data);
-    } catch (err) {
-      setError('Failed to load video. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handlePlayPause = () => {
     if (videoRef.current) {
