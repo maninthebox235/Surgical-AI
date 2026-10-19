@@ -1,0 +1,2 @@
+# Point default Trivy invocations at the YAML ignorefile (plain .trivyignore removed).
+ignorefile: .trivyignore.yaml

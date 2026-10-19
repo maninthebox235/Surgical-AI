@@ -1,0 +1,26 @@
+# Scoped, time-bounded ignores for unfixed upstream npm CVEs.
+# Only these two IDs; every other HIGH/CRITICAL finding must still fail the scan.
+vulnerabilities:
+  - id: CVE-2026-93687
+    paths:
+      - frontend/package-lock.json
+      - mobile/SurgicalEducation/package-lock.json
+    expired_at: 2027-01-17
+    statement: >-
+      No upstream fixed release for braces through 3.0.3 (latest published).
+      Pulled into frontend/package-lock.json via micromatch and chokidar
+      (CRA / webpack-dev-server / Jest tooling), and into
+      mobile/SurgicalEducation/package-lock.json via micromatch
+      (Metro / Jest). Revisit when braces ships a patched release.
+
+  - id: CVE-2026-85393
+    paths:
+      - frontend/package-lock.json
+      - mobile/SurgicalEducation/package-lock.json
+    expired_at: 2027-01-17
+    statement: >-
+      No upstream fixed release for node-forge through 1.4.0 (latest published).
+      Pulled into frontend/package-lock.json via selfsigned → webpack-dev-server
+      (react-scripts), and into mobile/SurgicalEducation/package-lock.json via
+      @expo/cli and @expo/code-signing-certificates (expo). Revisit when
+      node-forge ships a patched release.
