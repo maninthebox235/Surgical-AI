@@ -37,6 +37,15 @@ This is the backend service for the AI-Powered Surgical Education Platform. It p
    ```
    Edit `.env` with your configuration values.
 
+   Auth0 access-token verification (legacy `app.routes` Auth0 path) requires:
+   - `AUTH0_DOMAIN` — tenant host only (e.g. `your-tenant.auth0.com`)
+   - `AUTH0_AUDIENCE` — API identifier (JWT `aud` claim)
+   - Optional: `AUTH0_JWKS_CACHE_TTL_SECONDS` (default `3600`)
+   - Optional: `AUTH0_JWKS_UNKNOWN_KID_COOLDOWN_SECONDS` (default `60`)
+
+   Tokens are verified with PyJWT (`PyJWKClient`, RS256 only) against
+   `https://<AUTH0_DOMAIN>/.well-known/jwks.json` (signature, audience, issuer, exp/nbf).
+
 4. Initialize the database:
    ```bash
    # Create database
