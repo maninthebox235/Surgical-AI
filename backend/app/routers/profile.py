@@ -8,6 +8,7 @@ from ..schemas.user import UserUpdate, UserResponse
 
 router = APIRouter()
 
+
 @router.get("/", response_model=UserResponse)
 def get_profile(
     current_user: User = Depends(get_current_active_user),
@@ -16,6 +17,7 @@ def get_profile(
     Get current user profile.
     """
     return current_user
+
 
 @router.put("/", response_model=UserResponse)
 def update_profile(
@@ -28,12 +30,12 @@ def update_profile(
     Update current user profile.
     """
     update_data = profile_in.dict(exclude_unset=True)
-    
+
     for field, value in update_data.items():
         if hasattr(current_user, field):
             setattr(current_user, field, value)
-    
+
     db.commit()
     db.refresh(current_user)
-    
+
     return current_user

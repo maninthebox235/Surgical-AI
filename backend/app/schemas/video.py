@@ -3,15 +3,19 @@ from typing import Optional
 from pydantic import BaseModel, HttpUrl
 from ..models.video import VideoStatus
 
+
 class VideoBase(BaseModel):
     title: str
     description: Optional[str] = None
 
+
 class VideoCreate(VideoBase):
     pass
 
+
 class VideoUpdate(VideoBase):
     status: Optional[VideoStatus] = None
+
 
 class VideoInDB(VideoBase):
     id: int
@@ -26,10 +30,12 @@ class VideoInDB(VideoBase):
     class Config:
         from_attributes = True
 
+
 class VideoResponse(VideoInDB):
     thumbnail_url: Optional[HttpUrl] = None
     video_url: Optional[HttpUrl] = None
 
+
 class VideoUploadResponse(BaseModel):
     upload_url: HttpUrl
-    video_id: int 
+    video_id: int

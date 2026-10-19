@@ -9,7 +9,7 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI(
     title="Surgical Education Platform API",
     description="API for AI-powered surgical education platform",
-    version="1.0.0"
+    version="1.0.0",
 )
 
 # Configure CORS
@@ -28,6 +28,7 @@ app.include_router(analysis.router, prefix="/api/v1/analysis", tags=["Analysis"]
 app.include_router(annotations.router, prefix="/api/v1/annotations", tags=["Annotations"])
 app.include_router(profile.router, prefix="/api/v1/profile", tags=["Profile"])
 
+
 @app.get("/")
-async def root():
-    return {"message": "Welcome to the Surgical Education Platform API"} 
+async def root() -> dict[str, str]:
+    return {"message": "Welcome to the Surgical Education Platform API"}

@@ -132,104 +132,169 @@ const VideoAnalysis: React.FC = () => {
     }
   }, [currentTime, analysis]);
 
-  const handleAnnotationAdd = useCallback((type: string, description: string) => {
-    if (videoRef.current) {
-      const newAnnotation: Annotation = {
-        id: Date.now().toString(),
-        type,
-        description,
-        timestamp: videoRef.current.currentTime,
-        videoId,
-        userId: 'current-user', // TODO: Get from auth context
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-      setAnnotations(prev => [...prev, newAnnotation]);
+  const handlePlayPause = useCallback(() => {
+    if (!videoRef.current) return;
+    if (videoRef.current.paused) {
+      void videoRef.current.play();
+      setIsPlaying(true);
+    } else {
+      videoRef.current.pause();
+      setIsPlaying(false);
     }
-  }, [videoId]);
+  }, []);
 
-  useEffect(() => {
+  const handleMute = useCallback(() => {
+    if (!videoRef.current) return;
+    videoRef.current.muted = !videoRef.current.muted;
+    setIsMuted(videoRef.current.muted);
+  }, []);
+
+  const handleFullscreen = useCallback(() => {
+    if (!videoRef.current) return;
+    if (document.fullscreenElement) {
+      void document.exitFullscreen();
+    } else {
+      void videoRef.current.requestFullscreen();
+    }
+  }, []);
+
+  const handleSeekForward = useCallback(() => {
     if (videoRef.current) {
-      registerVideoPlayerShortcuts(
-        videoRef.current,
-        handlePlayPause,
-        handleMute,
-        handleFullscreen,
-        handleSeek,
-        handleVolumeChange,
-        handleSpeedChange
-      );
-      registerNavigationShortcuts(
-        videoRef.current,
-        handleNextStep,
-        handlePrevStep
-      );
-      registerAnnotationShortcuts(
-        handleAnnotationAdd,
-        handleDeleteAnnotation,
-        handleEditAnnotation
+      videoRef.current.currentTime = Math.min(
+        videoRef.current.duration || videoRef.current.currentTime + 5,
+        videoRef.current.currentTime + 5
       );
     }
+  }, []);
 
-    return () => {
-      unregisterAllShortcuts();
+  const handleSeekBackward = useCallback(() => {
+    if (videoRef.current) {
+      videoRef.current.currentTime = Math.max(0, videoRef.current.currentTime - 5);
+    }
+  }, []);
+
+  const handleNextFrame = useCallback(() => {
+    if (videoRef.current) {
+      videoRef.current.currentTime += 1 / 30;
+    }
+  }, []);
+
+  const handlePreviousFrame = useCallback(() => {
+    if (videoRef.current) {
+      videoRef.current.currentTime = Math.max(0, videoRef.current.currentTime - 1 / 30);
+    }
+  }, []);
+
+  const handleAnnotationAdd = useCallback((annotation: Annotation) => {
+    setAnnotations((prev) => [...prev, annotation]);
+  }, []);
+
+  const handleAnnotationAddFromShortcut = useCallback(() => {
+    if (!videoRef.current || !videoId) return;
+    const newAnnotation: Annotation = {
+      id: Date.now().toString(),
+      type: 'note',
+      text: '',
+      timestamp: videoRef.current.currentTime,
+      videoId,
+      userId: 'current-user',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
-  }, [handleAnnotationAdd, handlePlayPause, handleMute, handleFullscreen, handleSeek, handleVolumeChange, handleSpeedChange, handleNextStep, handlePrevStep, handleDeleteAnnotation, handleEditAnnotation]);
+    setAnnotations((prev) => [...prev, newAnnotation]);
+    setShowAnnotationDialog(true);
+  }, [videoId]);
 
   const handleTimeUpdate = (time: number) => {
     setCurrentTime(time);
   };
 
   const handleAnnotationUpdate = (updatedAnnotation: Annotation) => {
-    setAnnotations(
-      annotations.map((a) =>
-        a.id === updatedAnnotation.id ? updatedAnnotation : a
-      )
+    setAnnotations((prev) =>
+      prev.map((a) => (a.id === updatedAnnotation.id ? updatedAnnotation : a))
     );
   };
 
-  const handleAnnotationDelete = (id: string) => {
-    setAnnotations(prev => prev.filter(a => a.id !== id));
-  };
+  const handleAnnotationDelete = useCallback((id: string) => {
+    setAnnotations((prev) => prev.filter((a) => a.id !== id));
+  }, []);
 
-  const handleDownload = () => {
-    // Implement download functionality
-    console.log('Downloading analysis...');
-  };
+  const handleDeleteAnnotationShortcut = useCallback(() => {
+    if (selectedAnnotation) {
+      handleAnnotationDelete(selectedAnnotation.id);
+      setSelectedAnnotation(null);
+    }
+  }, [selectedAnnotation, handleAnnotationDelete]);
 
-  const handleShare = () => {
-    // Implement share functionality
-    console.log('Sharing analysis...');
-  };
+  const handleEditAnnotationShortcut = useCallback(() => {
+    if (selectedAnnotation) {
+      setShowAnnotationDialog(true);
+    }
+  }, [selectedAnnotation]);
 
-  const handleBookmark = () => {
-    // Implement bookmark functionality
-    console.log('Bookmarking analysis...');
-  };
-
-  const handleNextStep = () => {
-    const currentIndex = analysis?.steps.findIndex(
-      step => step.start_time >= currentTime
-    );
-    if (currentIndex !== undefined && analysis?.steps && currentIndex < analysis.steps.length - 1) {
+  const handleNextStep = useCallback(() => {
+    const currentIndex = analysis?.steps.findIndex((step) => step.start_time >= currentTime);
+    if (
+      currentIndex !== undefined &&
+      analysis?.steps &&
+      currentIndex < analysis.steps.length - 1
+    ) {
       const nextStep = analysis.steps[currentIndex + 1];
       if (nextStep && videoRef.current) {
         videoRef.current.currentTime = nextStep.start_time;
       }
     }
-  };
+  }, [analysis, currentTime]);
 
-  const handlePrevStep = () => {
-    const currentIndex = analysis?.steps.findIndex(
-      step => step.start_time >= currentTime
-    );
+  const handlePrevStep = useCallback(() => {
+    const currentIndex = analysis?.steps.findIndex((step) => step.start_time >= currentTime);
     if (currentIndex !== undefined && analysis?.steps && currentIndex > 0) {
       const prevStep = analysis.steps[currentIndex - 1];
       if (prevStep && videoRef.current) {
         videoRef.current.currentTime = prevStep.start_time;
       }
     }
-  };
+  }, [analysis, currentTime]);
+
+  const handleToggleComparison = useCallback(() => {
+    setShowComparison((prev) => !prev);
+  }, []);
+
+  useEffect(() => {
+    registerVideoPlayerShortcuts(
+      handlePlayPause,
+      handleSeekForward,
+      handleSeekBackward,
+      handleMute,
+      handleFullscreen,
+      handleNextFrame,
+      handlePreviousFrame
+    );
+    registerNavigationShortcuts(handleNextStep, handlePrevStep, handleToggleComparison);
+    registerAnnotationShortcuts(
+      handleAnnotationAddFromShortcut,
+      handleEditAnnotationShortcut,
+      handleDeleteAnnotationShortcut
+    );
+
+    return () => {
+      unregisterAllShortcuts();
+    };
+  }, [
+    handleAnnotationAddFromShortcut,
+    handlePlayPause,
+    handleMute,
+    handleFullscreen,
+    handleSeekForward,
+    handleSeekBackward,
+    handleNextFrame,
+    handlePreviousFrame,
+    handleNextStep,
+    handlePrevStep,
+    handleToggleComparison,
+    handleDeleteAnnotationShortcut,
+    handleEditAnnotationShortcut,
+  ]);
 
   if (loading) {
     return (
@@ -298,7 +363,7 @@ const VideoAnalysis: React.FC = () => {
                   </Typography>
                   <LinearProgress
                     variant="determinate"
-                    value={(currentStep.confidence * 100)}
+                    value={currentStep.confidence * 100}
                     sx={{ mb: 2 }}
                   />
                   <Typography variant="body2">
@@ -320,7 +385,10 @@ const VideoAnalysis: React.FC = () => {
                 {Object.entries(analysis.technique_analysis).map(([key, value]) => (
                   <Box key={key}>
                     <Typography variant="body2" gutterBottom>
-                      {key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                      {key
+                        .split('_')
+                        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                        .join(' ')}
                     </Typography>
                     <LinearProgress
                       variant="determinate"

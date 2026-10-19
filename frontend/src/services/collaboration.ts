@@ -18,7 +18,7 @@ interface CollaborationSession {
 
 interface CollaborationMessage {
   type: 'annotation' | 'playback' | 'chat';
-  data: any;
+  data: unknown;
   sender: User;
   timestamp: number;
 }
@@ -34,7 +34,7 @@ export class CollaborationService {
     return new Promise((resolve, reject) => {
       try {
         this.socket = io(this.serverUrl, {
-          query: { sessionId, userId }
+          query: { sessionId, userId },
         });
 
         this.socket.on('connect', () => {
@@ -46,13 +46,13 @@ export class CollaborationService {
           console.log('Disconnected from collaboration server');
         });
 
-        this.socket.on('error', (error) => {
+        this.socket.on('error', (error: Error) => {
           console.error('Collaboration error:', error);
           reject(error);
         });
 
         this.socket.on('message', (message: CollaborationMessage) => {
-          this.messageHandlers.forEach(handler => handler(message));
+          this.messageHandlers.forEach((handler) => handler(message));
         });
       } catch (error) {
         reject(error);
@@ -72,7 +72,7 @@ export class CollaborationService {
   }
 
   offMessage(handler: (message: CollaborationMessage) => void): void {
-    this.messageHandlers = this.messageHandlers.filter(h => h !== handler);
+    this.messageHandlers = this.messageHandlers.filter((h) => h !== handler);
   }
 
   sendMessage(message: Omit<CollaborationMessage, 'sender' | 'timestamp'>): void {
@@ -82,35 +82,35 @@ export class CollaborationService {
 
     this.socket.emit('message', {
       ...message,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   }
 
   updatePlaybackState(currentTime: number, isPlaying: boolean): void {
     this.sendMessage({
       type: 'playback',
-      data: { currentTime, isPlaying }
+      data: { currentTime, isPlaying },
     });
   }
 
   addAnnotation(annotation: Annotation): void {
     this.sendMessage({
       type: 'annotation',
-      data: annotation
+      data: annotation,
     });
   }
 
   updateAnnotation(annotation: Annotation): void {
     this.sendMessage({
       type: 'annotation',
-      data: annotation
+      data: annotation,
     });
   }
 
   deleteAnnotation(annotationId: string): void {
     this.sendMessage({
       type: 'annotation',
-      data: { id: annotationId, action: 'delete' }
+      data: { id: annotationId, action: 'delete' },
     });
   }
-} 
+}

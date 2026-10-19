@@ -2,8 +2,10 @@ from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional
 
+
 class CommentCreate(BaseModel):
     content: str
+
 
 class CommentResponse(BaseModel):
     id: int
@@ -14,4 +16,4 @@ class CommentResponse(BaseModel):
     user: Optional[dict]  # Can be replaced with a User schema if needed
 
     class Config:
-        orm_mode = True 
+        orm_mode = True

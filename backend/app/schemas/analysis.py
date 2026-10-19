@@ -3,6 +3,7 @@ from typing import Optional, List, Dict, Any
 from pydantic import BaseModel, Field
 from ..models.analysis import AnalysisType
 
+
 class AnalysisBase(BaseModel):
     video_id: int
     status: str
@@ -10,14 +11,17 @@ class AnalysisBase(BaseModel):
     result: Optional[dict] = None
     error: Optional[str] = None
 
+
 class AnalysisCreate(AnalysisBase):
     pass
+
 
 class AnalysisUpdate(BaseModel):
     status: Optional[str] = None
     progress: Optional[float] = None
     result: Optional[dict] = None
     error: Optional[str] = None
+
 
 class AnalysisInDB(AnalysisBase):
     id: int
@@ -28,8 +32,10 @@ class AnalysisInDB(AnalysisBase):
     class Config:
         from_attributes = True
 
+
 class AnalysisResponse(AnalysisInDB):
     pass
+
 
 class AnalysisResultBase(BaseModel):
     analysis_type: AnalysisType
@@ -39,13 +45,16 @@ class AnalysisResultBase(BaseModel):
     results: Dict[str, Any]
     metadata: Optional[Dict[str, Any]] = None
 
+
 class AnalysisResultCreate(AnalysisResultBase):
     video_id: int
+
 
 class AnalysisResultUpdate(BaseModel):
     confidence_score: Optional[float] = None
     results: Optional[Dict[str, Any]] = None
     metadata: Optional[Dict[str, Any]] = None
+
 
 class AnalysisResultInDB(AnalysisResultBase):
     id: int
@@ -56,10 +65,12 @@ class AnalysisResultInDB(AnalysisResultBase):
     class Config:
         from_attributes = True
 
+
 class InstrumentDetectionResult(BaseModel):
     instrument_type: str
     confidence: float
     bounding_box: List[float] = Field(..., min_items=4, max_items=4)  # [x, y, width, height]
+
 
 class StepRecognitionResult(BaseModel):
     step_name: str
@@ -68,11 +79,13 @@ class StepRecognitionResult(BaseModel):
     end_time: float
     instruments_used: List[str]
 
+
 class SkillAssessmentResult(BaseModel):
     metric_name: str
     score: float
     feedback: str
     details: Dict[str, Any]
+
 
 class ComplicationDetectionResult(BaseModel):
     complication_type: str
@@ -81,6 +94,7 @@ class ComplicationDetectionResult(BaseModel):
     severity: str
     description: str
 
+
 class AnalysisRequest(BaseModel):
     video_id: int
-    analysis_types: List[AnalysisType] 
+    analysis_types: List[AnalysisType]

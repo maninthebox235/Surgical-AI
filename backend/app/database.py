@@ -1,19 +1,22 @@
+from typing import Any, Generator
+
 from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+
 from .core.config import settings
+from .models.base import Base
 
 SQLALCHEMY_DATABASE_URL = settings.DATABASE_URL
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-Base = declarative_base()
+__all__ = ["Base", "SessionLocal", "engine", "get_db"]
 
-# Dependency
-def get_db():
+
+def get_db() -> Generator[Any, None, None]:
     db = SessionLocal()
     try:
         yield db
     finally:
-        db.close() 
+        db.close()

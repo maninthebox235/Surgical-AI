@@ -392,7 +392,7 @@ const VideoPlayer: React.FC = () => {
                     onAnnotationClick={handleAnnotationClick}
                     onAnnotationEdit={handleAnnotationEdit}
                     onAnnotationDelete={handleAnnotationDelete}
-                    selectedAnnotationId={selectedAnnotationId}
+                    selectedAnnotationId={selectedAnnotationId ?? undefined}
                     filterType={filterType}
                     onFilterChange={setFilterType}
                   />
@@ -485,13 +485,14 @@ const VideoPlayer: React.FC = () => {
           </DialogTitle>
           <DialogContent>
             <AnnotationEditor
+              videoId={Number(id) || 0}
               currentTime={currentTime}
               onSave={handleSaveAnnotation}
               onCancel={() => {
                 setShowAnnotationEditor(false);
                 setEditingAnnotation(null);
               }}
-              existingAnnotation={editingAnnotation}
+              existingAnnotation={editingAnnotation ?? undefined}
             />
           </DialogContent>
         </Dialog>

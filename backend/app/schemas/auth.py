@@ -1,26 +1,32 @@
-from pydantic import BaseModel, EmailStr, constr
+from pydantic import BaseModel, EmailStr, Field
 from typing import Optional
 from ..models.user import UserRole
+
 
 class UserBase(BaseModel):
     email: EmailStr
     full_name: str
 
+
 class UserCreate(UserBase):
-    password: constr(min_length=8)
+    password: str = Field(min_length=8)
     role: UserRole = UserRole.STUDENT
+
 
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
 
+
 class Token(BaseModel):
     access_token: str
     token_type: str
 
+
 class TokenData(BaseModel):
     email: Optional[str] = None
     role: Optional[UserRole] = None
+
 
 class UserResponse(UserBase):
     id: int
@@ -29,4 +35,4 @@ class UserResponse(UserBase):
     is_verified: bool
 
     class Config:
-        from_attributes = True 
+        from_attributes = True
