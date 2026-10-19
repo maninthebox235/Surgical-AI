@@ -34,6 +34,7 @@ An advanced platform for surgical education that uses AI to analyze surgical pro
    python -m venv venv
    source venv/bin/activate  # On Windows: venv\Scripts\activate
    pip install -r requirements.txt
+   cp .env.example .env  # set AUTH0_DOMAIN and AUTH0_AUDIENCE for Auth0 verification
    uvicorn app.main:app --reload
    ```
 
