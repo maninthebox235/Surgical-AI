@@ -44,9 +44,5 @@
   "bugs": {
     "url": "https://github.com/your-username/ai-surgical-education-platform/issues"
   },
-  "homepage": "https://github.com/your-username/ai-surgical-education-platform#readme",
-  "workspaces": [
-    "frontend",
-    "mobile/SurgicalEducation"
-  ]
+  "homepage": "https://github.com/your-username/ai-surgical-education-platform#readme"
 }
