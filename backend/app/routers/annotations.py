@@ -12,7 +12,7 @@ from ..schemas.annotation import (
     AnnotationResponse,
     AnnotationFilter,
     AnnotationBulkCreate,
-    AnnotationBulkUpdate
+    AnnotationBulkUpdate,
 )
 from ..utils.annotation_processor import (
     create_annotation,
@@ -20,10 +20,11 @@ from ..utils.annotation_processor import (
     update_annotation,
     delete_annotation,
     get_annotation_with_user,
-    bulk_create_annotations
+    bulk_create_annotations,
 )
 
 router = APIRouter()
+
 
 @router.post("/", response_model=AnnotationResponse)
 def create_new_annotation(
@@ -39,20 +40,21 @@ def create_new_annotation(
     video = db.query(Video).filter(Video.id == annotation_in.video_id).first()
     if not video:
         raise HTTPException(status_code=404, detail="Video not found")
-    
-    if video.uploaded_by_id != current_user.id:
+
+    if video.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    
+
     # Create annotation
     annotation = create_annotation(
         db=db,
         annotation_data=annotation_in,
         video_id=annotation_in.video_id,
-        user_id=current_user.id
+        user_id=current_user.id,
     )
-    
+
     # Get annotation with user info
     return get_annotation_with_user(db, annotation.id)
+
 
 @router.post("/bulk", response_model=List[AnnotationResponse])
 def create_bulk_annotations(
@@ -68,20 +70,21 @@ def create_bulk_annotations(
     video = db.query(Video).filter(Video.id == bulk_create.video_id).first()
     if not video:
         raise HTTPException(status_code=404, detail="Video not found")
-    
-    if video.uploaded_by_id != current_user.id:
+
+    if video.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    
+
     # Create annotations
     annotations = bulk_create_annotations(
         db=db,
         annotations=bulk_create.annotations,
         video_id=bulk_create.video_id,
-        user_id=current_user.id
+        user_id=current_user.id,
     )
-    
+
     # Get annotations with user info
     return [get_annotation_with_user(db, ann.id) for ann in annotations]
+
 
 @router.get("/", response_model=List[AnnotationResponse])
 def list_annotations(
@@ -98,15 +101,16 @@ def list_annotations(
         video = db.query(Video).filter(Video.id == filter_params.video_id).first()
         if not video:
             raise HTTPException(status_code=404, detail="Video not found")
-        
-        if video.uploaded_by_id != current_user.id:
+
+        if video.user_id != current_user.id:
             raise HTTPException(status_code=403, detail="Not enough permissions")
-    
+
     # Get annotations
     annotations = get_annotations(db, filter_params)
-    
+
     # Get annotations with user info
     return [get_annotation_with_user(db, ann.id) for ann in annotations]
+
 
 @router.get("/{annotation_id}", response_model=AnnotationResponse)
 def get_annotation(
@@ -120,13 +124,14 @@ def get_annotation(
     annotation = get_annotation_with_user(db, annotation_id)
     if not annotation:
         raise HTTPException(status_code=404, detail="Annotation not found")
-    
+
     # Verify video access
     video = db.query(Video).filter(Video.id == annotation["video_id"]).first()
-    if video.uploaded_by_id != current_user.id:
+    if video is None or video.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    
+
     return annotation
+
 
 @router.put("/{annotation_id}", response_model=AnnotationResponse)
 def update_existing_annotation(
@@ -143,23 +148,22 @@ def update_existing_annotation(
     current_annotation = db.query(Annotation).filter(Annotation.id == annotation_id).first()
     if not current_annotation:
         raise HTTPException(status_code=404, detail="Annotation not found")
-    
+
     # Verify video access
     video = db.query(Video).filter(Video.id == current_annotation.video_id).first()
-    if video.uploaded_by_id != current_user.id:
+    if video is None or video.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    
+
     # Update annotation
     annotation = update_annotation(
-        db=db,
-        annotation_id=annotation_id,
-        update_data=annotation_in.dict(exclude_unset=True)
+        db=db, annotation_id=annotation_id, update_data=annotation_in.dict(exclude_unset=True)
     )
-    
+
     if not annotation:
         raise HTTPException(status_code=404, detail="Annotation not found")
-    
+
     return get_annotation_with_user(db, annotation.id)
+
 
 @router.delete("/{annotation_id}", response_model=AnnotationResponse)
 def delete_existing_annotation(
@@ -175,17 +179,17 @@ def delete_existing_annotation(
     current_annotation = db.query(Annotation).filter(Annotation.id == annotation_id).first()
     if not current_annotation:
         raise HTTPException(status_code=404, detail="Annotation not found")
-    
+
     # Verify video access
     video = db.query(Video).filter(Video.id == current_annotation.video_id).first()
-    if video.uploaded_by_id != current_user.id:
+    if video is None or video.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    
+
     # Get annotation with user info before deleting
     annotation_with_user = get_annotation_with_user(db, annotation_id)
-    
+
     # Delete annotation
     if not delete_annotation(db, annotation_id):
         raise HTTPException(status_code=404, detail="Annotation not found")
-    
-    return annotation_with_user 
+
+    return annotation_with_user

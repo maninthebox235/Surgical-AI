@@ -8,8 +8,9 @@ from ..core.config import settings
 from ..models.analysis import AnalysisType
 from .video_processor import get_video_url
 
+
 class AIAnalyzer:
-    def __init__(self):
+    def __init__(self) -> None:
         self.instrument_detector = self._load_instrument_detector()
         self.step_recognizer = self._load_step_recognizer()
         self.skill_assessor = self._load_skill_assessor()
@@ -45,32 +46,30 @@ class AIAnalyzer:
         return None
 
     def analyze_video(
-        self,
-        video_url: str,
-        analysis_types: List[AnalysisType]
+        self, video_url: str, analysis_types: List[AnalysisType]
     ) -> Dict[AnalysisType, Dict[str, Any]]:
         """
         Analyze a surgical video using the specified analysis types.
         """
         results = {}
-        
+
         # Download video to memory
         response = requests.get(video_url)
         video_data = response.content
-        
+
         # Process video based on requested analysis types
         if AnalysisType.INSTRUMENT_DETECTION in analysis_types:
             results[AnalysisType.INSTRUMENT_DETECTION] = self._detect_instruments(video_data)
-        
+
         if AnalysisType.STEP_RECOGNITION in analysis_types:
             results[AnalysisType.STEP_RECOGNITION] = self._recognize_steps(video_data)
-        
+
         if AnalysisType.SKILL_ASSESSMENT in analysis_types:
             results[AnalysisType.SKILL_ASSESSMENT] = self._assess_skills(video_data)
-        
+
         if AnalysisType.COMPLICATION_DETECTION in analysis_types:
             results[AnalysisType.COMPLICATION_DETECTION] = self._detect_complications(video_data)
-        
+
         return results
 
     def _detect_instruments(self, video_data: bytes) -> Dict[str, Any]:
@@ -84,10 +83,10 @@ class AIAnalyzer:
                     "instrument_type": "scalpel",
                     "confidence": 0.95,
                     "bounding_box": [100, 100, 200, 200],
-                    "timestamp": 1.5
+                    "timestamp": 1.5,
                 }
             ],
-            "confidence_score": 0.95
+            "confidence_score": 0.95,
         }
 
     def _recognize_steps(self, video_data: bytes) -> Dict[str, Any]:
@@ -102,10 +101,10 @@ class AIAnalyzer:
                     "confidence": 0.92,
                     "start_time": 0.0,
                     "end_time": 5.0,
-                    "instruments_used": ["scalpel"]
+                    "instruments_used": ["scalpel"],
                 }
             ],
-            "confidence_score": 0.92
+            "confidence_score": 0.92,
         }
 
     def _assess_skills(self, video_data: bytes) -> Dict[str, Any]:
@@ -119,13 +118,10 @@ class AIAnalyzer:
                     "metric_name": "instrument_handling",
                     "score": 0.85,
                     "feedback": "Good instrument control, but could improve precision",
-                    "details": {
-                        "precision": 0.82,
-                        "efficiency": 0.88
-                    }
+                    "details": {"precision": 0.82, "efficiency": 0.88},
                 }
             ],
-            "overall_score": 0.85
+            "overall_score": 0.85,
         }
 
     def _detect_complications(self, video_data: bytes) -> Dict[str, Any]:
@@ -140,11 +136,12 @@ class AIAnalyzer:
                     "confidence": 0.78,
                     "timestamp": 120.5,
                     "severity": "moderate",
-                    "description": "Moderate bleeding detected during dissection"
+                    "description": "Moderate bleeding detected during dissection",
                 }
             ],
-            "confidence_score": 0.78
+            "confidence_score": 0.78,
         }
 
+
 # Create a singleton instance
-ai_analyzer = AIAnalyzer() 
+ai_analyzer = AIAnalyzer()

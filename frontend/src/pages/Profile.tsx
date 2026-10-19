@@ -26,12 +26,10 @@ import {
   VideoLibrary as VideoIcon,
   Timeline as TimelineIcon,
   Assessment as AssessmentIcon,
-  Person as PersonIcon,
   Email as EmailIcon,
   School as SchoolIcon,
   Work as WorkIcon,
 } from '@mui/icons-material';
-import { useAuth } from '../contexts/AuthContext';
 import { getProfile, updateProfile } from '../services/api';
 
 interface UserProfile {
@@ -60,7 +58,6 @@ interface Activity {
 }
 
 const Profile: React.FC = () => {
-  const { user } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

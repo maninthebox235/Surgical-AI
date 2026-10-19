@@ -14,7 +14,6 @@ import {
 } from '@mui/material';
 import {
   MoreVert as MoreVertIcon,
-  PlayArrow as PlayArrowIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
   Share as ShareIcon,

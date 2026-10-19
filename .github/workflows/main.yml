@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 env:
-  NODE_VERSION: '18.x'
+  NODE_VERSION: '20.x'
   PYTHON_VERSION: '3.11'
 
 jobs:
@@ -157,6 +157,10 @@ jobs:
         scan-ref: '.'
         format: 'sarif'
         output: 'trivy-results.sarif'
+        severity: 'HIGH,CRITICAL'
+        limit-severities-for-sarif: true
+        exit-code: '1'
+        trivyignores: '.trivyignore.yaml'
     
     - name: Upload Trivy scan results
       uses: github/codeql-action/upload-sarif@v2

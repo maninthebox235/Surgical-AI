@@ -24,13 +24,7 @@ import {
   Add as AddIcon,
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
-
-interface Annotation {
-  id: string;
-  timestamp: number;
-  text: string;
-  type: 'note' | 'highlight' | 'warning';
-}
+import { Annotation } from '../types/annotation';
 
 interface AnnotationPanelProps {
   annotations: Annotation[];
@@ -76,7 +70,7 @@ const AnnotationPanel: React.FC<AnnotationPanelProps> = ({
 
   const handleEditAnnotation = (annotation: Annotation) => {
     setEditingAnnotation(annotation);
-    setNewAnnotationText(annotation.text);
+    setNewAnnotationText(annotation.text || annotation.content || '');
     setNewAnnotationType(annotation.type);
     setIsDialogOpen(true);
   };
@@ -138,7 +132,7 @@ const AnnotationPanel: React.FC<AnnotationPanelProps> = ({
             }}
           >
             <ListItemText
-              primary={annotation.text}
+              primary={annotation.text || annotation.content || ''}
               secondary={
                 <Stack direction="row" spacing={1} alignItems="center">
                   <Chip

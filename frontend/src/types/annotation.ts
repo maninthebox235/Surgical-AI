@@ -3,9 +3,11 @@ export interface Annotation {
   timestamp: number;
   text?: string;
   content?: string;
+  description?: string;
   type: 'note' | 'highlight' | 'warning';
   userId?: string;
+  videoId?: string;
   tags?: string[];
-  createdAt?: Date;
-  updatedAt?: Date;
-} 
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+}

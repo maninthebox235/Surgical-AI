@@ -10,12 +10,13 @@ from ..schemas.analysis import (
     AnalysisRequest,
     AnalysisResultCreate,
     AnalysisResultInDB,
-    AnalysisResultUpdate
+    AnalysisResultUpdate,
 )
 from ..utils.ai_analyzer import ai_analyzer
 from ..utils.video_processor import get_video_url
 
 router = APIRouter()
+
 
 @router.post("/analyze", response_model=List[AnalysisResultInDB])
 def analyze_video(
@@ -32,31 +33,30 @@ def analyze_video(
     video = db.query(Video).filter(Video.id == analysis_request.video_id).first()
     if not video:
         raise HTTPException(status_code=404, detail="Video not found")
-    
-    if video.uploaded_by_id != current_user.id:
+
+    if video.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    
-    if video.status != VideoStatus.READY:
-        raise HTTPException(
-            status_code=400,
-            detail="Video must be in READY state for analysis"
-        )
-    
+
+    if video.status != VideoStatus.COMPLETED:
+        raise HTTPException(status_code=400, detail="Video must be in READY state for analysis")
+
     # Start background analysis
     background_tasks.add_task(
-        process_analysis_background,
-        analysis_request.video_id,
-        analysis_request.analysis_types,
-        db
+        process_analysis_background, analysis_request.video_id, analysis_request.analysis_types, db
     )
-    
+
     # Return existing analysis results if any
-    existing_results = db.query(AnalysisResult).filter(
-        AnalysisResult.video_id == analysis_request.video_id,
-        AnalysisResult.analysis_type.in_(analysis_request.analysis_types)
-    ).all()
-    
+    existing_results = (
+        db.query(AnalysisResult)
+        .filter(
+            AnalysisResult.video_id == analysis_request.video_id,
+            AnalysisResult.analysis_type.in_(analysis_request.analysis_types),
+        )
+        .all()
+    )
+
     return existing_results
+
 
 @router.get("/video/{video_id}", response_model=List[AnalysisResultInDB])
 def get_video_analysis(
@@ -71,16 +71,15 @@ def get_video_analysis(
     video = db.query(Video).filter(Video.id == video_id).first()
     if not video:
         raise HTTPException(status_code=404, detail="Video not found")
-    
-    if video.uploaded_by_id != current_user.id:
+
+    if video.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    
+
     # Get all analysis results
-    results = db.query(AnalysisResult).filter(
-        AnalysisResult.video_id == video_id
-    ).all()
-    
+    results = db.query(AnalysisResult).filter(AnalysisResult.video_id == video_id).all()
+
     return results
+
 
 @router.get("/video/{video_id}/type/{analysis_type}", response_model=AnalysisResultInDB)
 def get_video_analysis_by_type(
@@ -96,48 +95,52 @@ def get_video_analysis_by_type(
     video = db.query(Video).filter(Video.id == video_id).first()
     if not video:
         raise HTTPException(status_code=404, detail="Video not found")
-    
-    if video.uploaded_by_id != current_user.id:
+
+    if video.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not enough permissions")
-    
+
     # Get analysis result
-    result = db.query(AnalysisResult).filter(
-        AnalysisResult.video_id == video_id,
-        AnalysisResult.analysis_type == analysis_type
-    ).first()
-    
+    result = (
+        db.query(AnalysisResult)
+        .filter(AnalysisResult.video_id == video_id, AnalysisResult.analysis_type == analysis_type)
+        .first()
+    )
+
     if not result:
         raise HTTPException(status_code=404, detail="Analysis result not found")
-    
+
     return result
 
+
 def process_analysis_background(
-    video_id: int,
-    analysis_types: List[AnalysisType],
-    db: Session
+    video_id: int, analysis_types: List[AnalysisType], db: Session
 ) -> None:
     """
     Background task to process video analysis.
     """
     try:
         video = db.query(Video).filter(Video.id == video_id).first()
-        if not video:
+        if not video or not video.file_path:
             return
-        
+
         # Get video URL
         video_url = get_video_url(video.file_path)
-        
+
         # Run AI analysis
         analysis_results = ai_analyzer.analyze_video(video_url, analysis_types)
-        
+
         # Save results to database
         for analysis_type, result in analysis_results.items():
             # Check if analysis result already exists
-            existing_result = db.query(AnalysisResult).filter(
-                AnalysisResult.video_id == video_id,
-                AnalysisResult.analysis_type == analysis_type
-            ).first()
-            
+            existing_result = (
+                db.query(AnalysisResult)
+                .filter(
+                    AnalysisResult.video_id == video_id,
+                    AnalysisResult.analysis_type == analysis_type,
+                )
+                .first()
+            )
+
             if existing_result:
                 # Update existing result
                 existing_result.confidence_score = result.get("confidence_score")
@@ -148,14 +151,14 @@ def process_analysis_background(
                     video_id=video_id,
                     analysis_type=analysis_type,
                     start_time=0.0,  # TODO: Get actual start time
-                    end_time=0.0,    # TODO: Get actual end time
+                    end_time=0.0,  # TODO: Get actual end time
                     confidence_score=result.get("confidence_score"),
-                    results=result
+                    results=result,
                 )
                 db.add(new_result)
-        
+
         db.commit()
-        
+
     except Exception as e:
         print(f"Error processing analysis for video {video_id}: {e}")
-        db.rollback() 
+        db.rollback()

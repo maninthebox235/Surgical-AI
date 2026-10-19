@@ -10,7 +10,6 @@ import {
   ListItemText,
   ListItemIcon,
   Divider,
-  Chip,
 } from '@mui/material';
 import {
   VideoLibrary as VideoIcon,

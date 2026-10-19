@@ -3,10 +3,6 @@
   "version": "1.0.0",
   "description": "AI-Powered Surgical Education Platform with backend, frontend, and mobile components",
   "private": true,
-  "workspaces": [
-    "frontend",
-    "mobile/SurgicalEducation"
-  ],
   "scripts": {
     "install:all": "npm install && npm run install:frontend && npm run install:mobile",
     "install:frontend": "cd frontend && npm install",
