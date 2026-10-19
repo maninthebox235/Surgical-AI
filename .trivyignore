@@ -1,0 +1,6 @@
+# Unfixed upstream: braces through 3.0.3 (latest published) has no patched release.
+# See https://github.com/micromatch/braces/issues/73
+CVE-2026-93687
+
+# Unfixed upstream: node-forge through 1.4.0 (latest published) has no patched release.
+CVE-2026-85393

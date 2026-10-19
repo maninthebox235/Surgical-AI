@@ -3,7 +3,7 @@ import os
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from jose import jwt
+import jwt
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -25,8 +25,8 @@ async def get_current_user(
         # Dev/test path: signature verification disabled; key omitted intentionally.
         payload = jwt.decode(
             token,
-            key="",
             options={"verify_signature": False},
+            algorithms=["HS256", "RS256"],
             audience=AUTH0_AUDIENCE,
             issuer=f"https://{AUTH0_DOMAIN}/",
         )

@@ -1,7 +1,8 @@
 from datetime import datetime, timedelta
-from typing import Any, Optional, cast
+from typing import Any, Optional
 
-from jose import JWTError, jwt
+import jwt
+from jwt.exceptions import PyJWTError
 from passlib.context import CryptContext
 
 from .config import settings
@@ -31,7 +32,9 @@ def create_access_token(data: dict[str, Any], expires_delta: Optional[timedelta]
 
 def verify_token(token: str) -> Optional[dict[str, Any]]:
     try:
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-        return cast(dict[str, Any], payload)
-    except JWTError:
+        payload: dict[str, Any] = jwt.decode(
+            token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
+        )
+        return payload
+    except PyJWTError:
         return None
