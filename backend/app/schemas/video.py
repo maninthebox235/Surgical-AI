@@ -23,7 +23,7 @@ class VideoInDB(VideoBase):
     thumbnail_path: Optional[str]
     duration: Optional[str]
     status: VideoStatus
-    uploaded_by_id: int
+    user_id: int
     created_at: datetime
     updated_at: datetime
 

@@ -11,7 +11,14 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 from app.core.database import Base
-from app.models.models import User, Video, Analysis  # Import all models here
+from app.models import (  # noqa: F401 — register metadata for Alembic
+    Analysis,
+    AnalysisResult,
+    Annotation,
+    Comment,
+    User,
+    Video,
+)
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

@@ -112,13 +112,17 @@ def generate_feedback(
     """
     Generate detailed feedback based on model predictions and technique analysis
     """
-    feedback = {"steps": [], "technique_analysis": {}, "recommendations": []}  # type: ignore[var-annotated]
+    feedback: Dict[str, Any] = {
+        "steps": [],
+        "technique_analysis": {},
+        "recommendations": [],
+    }
 
     # Process step predictions
     for i, pred in enumerate(step_predictions):
         if max(pred.values()) > 0.5:  # Confidence threshold
             step = max(pred.items(), key=lambda x: x[1])
-            feedback["steps"].append(  # type: ignore[attr-defined]
+            feedback["steps"].append(
                 {
                     "step": step[0],
                     "confidence": float(step[1]),
@@ -136,19 +140,19 @@ def generate_feedback(
 
     # Generate recommendations based on technique scores
     if avg_technique["instrument_handling"] < 0.7:
-        feedback["recommendations"].append(  # type: ignore[attr-defined]
+        feedback["recommendations"].append(
             "Consider improving instrument handling technique. Practice proper grip and movement control."
         )
     if avg_technique["tissue_handling"] < 0.7:
-        feedback["recommendations"].append(  # type: ignore[attr-defined]
+        feedback["recommendations"].append(
             "Work on gentler tissue handling. Minimize trauma to surrounding tissues."
         )
     if avg_technique["precision"] < 0.7:
-        feedback["recommendations"].append(  # type: ignore[attr-defined]
+        feedback["recommendations"].append(
             "Focus on improving precision in movements. Consider practicing with simulation tools."
         )
     if avg_technique["efficiency"] < 0.7:
-        feedback["recommendations"].append(  # type: ignore[attr-defined]
+        feedback["recommendations"].append(
             "Look for opportunities to improve efficiency. Plan movements ahead and minimize unnecessary steps."
         )
 

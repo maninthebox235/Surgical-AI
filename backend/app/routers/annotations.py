@@ -41,7 +41,7 @@ def create_new_annotation(
     if not video:
         raise HTTPException(status_code=404, detail="Video not found")
 
-    if video.uploaded_by_id != current_user.id:
+    if video.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
     # Create annotation
@@ -71,7 +71,7 @@ def create_bulk_annotations(
     if not video:
         raise HTTPException(status_code=404, detail="Video not found")
 
-    if video.uploaded_by_id != current_user.id:
+    if video.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
     # Create annotations
@@ -102,7 +102,7 @@ def list_annotations(
         if not video:
             raise HTTPException(status_code=404, detail="Video not found")
 
-        if video.uploaded_by_id != current_user.id:
+        if video.user_id != current_user.id:
             raise HTTPException(status_code=403, detail="Not enough permissions")
 
     # Get annotations
@@ -127,7 +127,7 @@ def get_annotation(
 
     # Verify video access
     video = db.query(Video).filter(Video.id == annotation["video_id"]).first()
-    if video.uploaded_by_id != current_user.id:  # type: ignore[union-attr]
+    if video is None or video.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
     return annotation
@@ -151,7 +151,7 @@ def update_existing_annotation(
 
     # Verify video access
     video = db.query(Video).filter(Video.id == current_annotation.video_id).first()
-    if video.uploaded_by_id != current_user.id:  # type: ignore[union-attr]
+    if video is None or video.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
     # Update annotation
@@ -182,7 +182,7 @@ def delete_existing_annotation(
 
     # Verify video access
     video = db.query(Video).filter(Video.id == current_annotation.video_id).first()
-    if video.uploaded_by_id != current_user.id:  # type: ignore[union-attr]
+    if video is None or video.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
     # Get annotation with user info before deleting

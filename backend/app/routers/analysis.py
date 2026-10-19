@@ -34,10 +34,10 @@ def analyze_video(
     if not video:
         raise HTTPException(status_code=404, detail="Video not found")
 
-    if video.uploaded_by_id != current_user.id:
+    if video.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
-    if video.status != VideoStatus.READY:
+    if video.status != VideoStatus.COMPLETED:
         raise HTTPException(status_code=400, detail="Video must be in READY state for analysis")
 
     # Start background analysis
@@ -72,7 +72,7 @@ def get_video_analysis(
     if not video:
         raise HTTPException(status_code=404, detail="Video not found")
 
-    if video.uploaded_by_id != current_user.id:
+    if video.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
     # Get all analysis results
@@ -96,7 +96,7 @@ def get_video_analysis_by_type(
     if not video:
         raise HTTPException(status_code=404, detail="Video not found")
 
-    if video.uploaded_by_id != current_user.id:
+    if video.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
     # Get analysis result
@@ -120,11 +120,11 @@ def process_analysis_background(
     """
     try:
         video = db.query(Video).filter(Video.id == video_id).first()
-        if not video:
+        if not video or not video.file_path:
             return
 
         # Get video URL
-        video_url = get_video_url(video.file_path)  # type: ignore[arg-type]
+        video_url = get_video_url(video.file_path)
 
         # Run AI analysis
         analysis_results = ai_analyzer.analyze_video(video_url, analysis_types)
@@ -143,8 +143,8 @@ def process_analysis_background(
 
             if existing_result:
                 # Update existing result
-                existing_result.confidence_score = result.get("confidence_score")  # type: ignore[assignment]
-                existing_result.results = result  # type: ignore[assignment]
+                existing_result.confidence_score = result.get("confidence_score")
+                existing_result.results = result
             else:
                 # Create new result
                 new_result = AnalysisResult(

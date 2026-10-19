@@ -1,4 +1,5 @@
-from typing import Any, cast
+from typing import cast
+
 import boto3
 from fastapi import UploadFile
 import os
@@ -25,7 +26,8 @@ async def upload_to_s3(file: UploadFile, user_id: int) -> str:
     # Generate a unique file name
     timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
     unique_id = str(uuid.uuid4())[:8]
-    file_extension = os.path.splitext(file.filename)[1]  # type: ignore[type-var]
+    filename = file.filename or ""
+    file_extension = os.path.splitext(filename)[1]
     s3_key = f"videos/{user_id}/{timestamp}_{unique_id}{file_extension}"
 
     # Upload file to S3

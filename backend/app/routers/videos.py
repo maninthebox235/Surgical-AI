@@ -32,8 +32,8 @@ def create_video(
     video = Video(
         title=video_in.title,
         description=video_in.description,
-        uploaded_by_id=current_user.id,
-        status=VideoStatus.UPLOADING,
+        user_id=current_user.id,
+        status=VideoStatus.PENDING,
     )
     db.add(video)
     db.commit()
@@ -43,7 +43,7 @@ def create_video(
     presigned_url, object_key = generate_presigned_url(video.id, ".mp4")
 
     # Update video with file path
-    video.file_path = object_key  # type: ignore[assignment]
+    video.file_path = object_key
     db.commit()
 
     return {"upload_url": presigned_url, "video_id": video.id}
@@ -63,10 +63,10 @@ def process_video(
     if not video:
         raise HTTPException(status_code=404, detail="Video not found")
 
-    if video.uploaded_by_id != current_user.id:
+    if video.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
-    if video.status != VideoStatus.UPLOADING:
+    if video.status != VideoStatus.PENDING:
         raise HTTPException(status_code=400, detail="Video is not in uploading state")
 
     # Update status to processing
@@ -90,18 +90,14 @@ def list_videos(
     List all videos for the current user.
     """
     videos = (
-        db.query(Video)
-        .filter(Video.uploaded_by_id == current_user.id)
-        .offset(skip)
-        .limit(limit)
-        .all()
+        db.query(Video).filter(Video.user_id == current_user.id).offset(skip).limit(limit).all()
     )
 
     return [
         VideoResponse(
             **video.__dict__,
-            video_url=get_video_url(video.file_path) if video.file_path else None,  # type: ignore[arg-type]
-            thumbnail_url=get_video_url(video.thumbnail_path) if video.thumbnail_path else None,  # type: ignore[arg-type]
+            video_url=get_video_url(video.file_path) if video.file_path else None,
+            thumbnail_url=get_video_url(video.thumbnail_path) if video.thumbnail_path else None,
         )
         for video in videos
     ]
@@ -120,13 +116,13 @@ def get_video(
     if not video:
         raise HTTPException(status_code=404, detail="Video not found")
 
-    if video.uploaded_by_id != current_user.id:
+    if video.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
     return VideoResponse(
         **video.__dict__,
-        video_url=get_video_url(video.file_path) if video.file_path else None,  # type: ignore[arg-type]
-        thumbnail_url=get_video_url(video.thumbnail_path) if video.thumbnail_path else None,  # type: ignore[arg-type]
+        video_url=get_video_url(video.file_path) if video.file_path else None,
+        thumbnail_url=get_video_url(video.thumbnail_path) if video.thumbnail_path else None,
     )
 
 
@@ -143,7 +139,7 @@ def delete_video(
     if not video:
         raise HTTPException(status_code=404, detail="Video not found")
 
-    if video.uploaded_by_id != current_user.id:
+    if video.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
     db.delete(video)
@@ -166,7 +162,7 @@ def share_video(
     if not video:
         raise HTTPException(status_code=404, detail="Video not found")
 
-    if video.uploaded_by_id != current_user.id:
+    if video.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
     # TODO: Implement actual sharing logic (email, link generation, etc.)
@@ -187,7 +183,7 @@ def export_video_report(
     if not video:
         raise HTTPException(status_code=404, detail="Video not found")
 
-    if video.uploaded_by_id != current_user.id:
+    if video.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
     # TODO: Implement actual PDF generation
@@ -209,27 +205,27 @@ def process_video_background(video_id: int, db: Session) -> None:
     """
     try:
         video = db.query(Video).filter(Video.id == video_id).first()
-        if not video:
+        if not video or not video.file_path:
             return
 
         # Download video to temporary file
         with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as temp_video:
-            response = requests.get(get_video_url(video.file_path))  # type: ignore[arg-type]
+            response = requests.get(get_video_url(video.file_path))
             temp_video.write(response.content)
             temp_video_path = temp_video.name
 
         # Generate thumbnail
         thumbnail_path = f"thumbnails/{video_id}.jpg"
         if generate_thumbnail(temp_video_path, thumbnail_path):
-            video.thumbnail_path = thumbnail_path  # type: ignore[assignment]
+            video.thumbnail_path = thumbnail_path
 
         # Get video duration
         duration = get_video_duration(temp_video_path)
         if duration:
-            video.duration = duration  # type: ignore[assignment]
+            video.duration = duration
 
         # Update video status
-        video.status = VideoStatus.READY
+        video.status = VideoStatus.COMPLETED
         db.commit()
 
         # Clean up temporary file
@@ -237,5 +233,7 @@ def process_video_background(video_id: int, db: Session) -> None:
 
     except Exception as e:
         print(f"Error processing video {video_id}: {e}")
-        video.status = VideoStatus.FAILED  # type: ignore[union-attr]
-        db.commit()
+        failed_video = db.query(Video).filter(Video.id == video_id).first()
+        if failed_video is not None:
+            failed_video.status = VideoStatus.FAILED
+            db.commit()

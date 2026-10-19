@@ -10,7 +10,6 @@ class Base(DeclarativeBase):
 
 class BaseModel(Base):
     __abstract__ = True
-    __allow_unmapped__ = True
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)

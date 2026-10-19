@@ -22,7 +22,6 @@ async def get_current_user(
 ) -> Any:
     try:
         token = credentials.credentials
-        # Dev/test path: signature verification disabled; key omitted intentionally.
         payload = jwt.decode(
             token,
             options={"verify_signature": False},
